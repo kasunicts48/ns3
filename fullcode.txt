@@ -1,0 +1,289 @@
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/point-to-point-module.h"
+#include "ns3/applications-module.h"
+#include "ns3/netanim-module.h"
+#include "ns3/drop-tail-queue.h"
+#include "ns3/constant-position-mobility-model.h"
+#include "ns3/csma-module.h"
+
+using namespace ns3;
+
+int main(int argc,char *argv[]){
+
+LogComponentEnable("UdpEchoClientApplication",LOG_LEVEL_INFO);
+LogComponentEnable("UdpEchoServerApplication",LOG_LEVEL_INFO);
+
+LogComponentEnable("UdpClient",LOG_LEVEL_INFO);
+LogComponentEnable("UdpServer",LOG_LEVEL_INFO);
+
+NodeContainer nodes;
+nodes.Create(4);
+
+NodeContainer csmaNodes1;
+csmaNodes1.Add(nodes.Get(2));
+csmaNodes1.Create(3);
+
+NodeContainer csmaNodes2;
+csmaNodes2.Add(nodes.Get(1));
+csmaNodes2.Create(3);
+
+Vector temp0(5,4,0);
+Ptr<Node> n0=nodes.Get(0);
+Ptr<ConstantPositionMobilityModel> p0=n0->GetObject<ConstantPositionMobilityModel>();
+p0=CreateObject<ConstantPositionMobilityModel>();
+n0->AggregateObject(p0);
+p0->SetPosition(temp0)
+
+Vector temp1(4,4,0);
+Ptr<Node> n1=nodes.Get(1);
+Ptr<ConstantPositionMobilityModel> p1=n1->GetObject<ConstantPositionMobilityModel>();
+p1=CreateObject<ConstantPositionMobilityModel>();
+n1->AggregateObject(p1);
+p1->SetPosition(temp1);
+
+Vector temp2(2,5,0);
+Ptr<Node> n2=nodes.Get(2);
+Ptr<ConstantPositionMobilityModel> p2=n2->GetObject<ConstantPositionMobilityModel>();
+p2=CreateObject<ConstantPositionMobilityModel>();
+n2->AggregateObject(p2);
+p2->SetPosition(temp2);
+
+Vector temp3(6,2,0);
+Ptr<Node> n3=nodes.Get(3);
+Ptr<ConstantPositionMobilityModel> p3=n3->GetObject<ConstantPositionMobilityModel>();
+p3=CreateObject<ConstantPositionMobilityModel>();
+n3->AggregateObject(p3);
+p3->SetPosition(temp3);
+
+Vector temp4(4,5,0);
+Ptr<Node> n4=csmaNodes1.Get(1);
+Ptr<ConstantPositionMobilityModel> p4=n4->GetObject<ConstantPositionMobilityModel>();
+p4=CreateObject<ConstantPositionMobilityModel>();
+n4->AggregateObject(p4);
+p4->SetPosition(temp4);
+
+Vector temp5(5,5,0);
+Ptr<Node> n5=csmaNodes1.Get(2);
+Ptr<ConstantPositionMobilityModel> p5=n5->GetObject<ConstantPositionMobilityModel>();
+p5=CreateObject<ConstantPositionMobilityModel>();
+n5->AggregateObject(p5);
+p5->SetPosition(temp5);
+
+Vector temp6(6,5,0);
+Ptr<Node> n6=csmaNodes1.Get(3);
+Ptr<ConstantPositionMobilityModel> p6=n6->GetObject<ConstantPositionMobilityModel>();
+p6=CreateObject<ConstantPositionMobilityModel>();
+n6->AggregateObject(p6);
+p6->SetPosition(temp6);
+
+Vector temp7(3,4,0);
+Ptr<Node> n7=csmaNodes2.Get(1);
+Ptr<ConstantPositionMobilityModel> p7=n7->GetObject<ConstantPositionMobilityModel>();
+p7=CreateObject<ConstantPositionMobilityModel>();
+n7->AggregateObject(p7);
+p7->SetPosition(temp7);
+
+Vector temp8(2,3,0);
+Ptr<Node> n8=csmaNodes2.Get(2);
+Ptr<ConstantPositionMobilityModel> p8=n8->GetObject<ConstantPositionMobilityModel>();
+p8=CreateObject<ConstantPositionMobilityModel>();
+n8->AggregateObject(p8);
+p8->SetPosition(temp8);
+
+Vector temp9(1,2,0);
+Ptr<Node> n9=csmaNodes2.Get(3);
+Ptr<ConstantPositionMobilityModel> p9=n9->GetObject<ConstantPositionMobilityModel>();
+p9=CreateObject<ConstantPositionMobilityModel>();
+n9->AggregateObject(p9);
+p9->SetPosition(temp9);
+
+PointToPointHelper ptp1,ptp2,ptp3;
+
+ptp1.SetDeviceAttribute("DataRate",StringValue("5Mbps"));
+ptp1.SetChannelAttribute("Delay",StringValue("2ms"));
+// ptp1.SetQueue("ns3::DropTailQueue","MaxPackets",UintegerValue(2));
+
+ptp2.SetDeviceAttribute("DataRate",StringValue("5Mbps"));
+ptp2.SetChannelAttribute("Delay",StringValue("2ms"));
+
+ptp3.SetDeviceAttribute("DataRate",StringValue("5Mbps"));
+ptp3.SetChannelAttribute("Delay",StringValue("2ms"));
+// ptp3.SetQueue("ns3::DropTailQueue","MaxPackets",UintegerValue(2));
+
+CsmaHelper csma1;
+csma1.SetChannelAttribute("DataRate",StringValue("100Mbps"));
+csma1.SetChannelAttribute("Delay",TimeValue(NanoSeconds(6560)));
+
+CsmaHelper csma2;
+csma2.SetChannelAttribute("DataRate",StringValue("100Mbps"));
+csma2.SetChannelAttribute("Delay",TimeValue(NanoSeconds(6560)));
+
+InternetStackHelper stack;
+stack.Install(nodes);
+
+stack.Install(csmaNodes1.Get(1));
+stack.Install(csmaNodes1.Get(2));
+stack.Install(csmaNodes1.Get(3));
+
+stack.Install(csmaNodes2.Get(1));
+stack.Install(csmaNodes2.Get(2));
+stack.Install(csmaNodes2.Get(3));
+
+NetDeviceContainer device1,device2,device3,device4,device5;
+device1=ptp1.Install(nodes.Get(0),nodes.Get(1));
+device2=ptp2.Install(nodes.Get(1),nodes.Get(2));
+device3=ptp3.Install(nodes.Get(2),nodes.Get(3));
+device4=csma1.Install(csmaNodes1);
+device5=csma2.Install(csmaNodes2);
+
+Ipv4AddressHelper address1,address2,address3,address4,address5;
+address1.SetBase("192.168.3.0","255.255.255.0");
+address2.SetBase("192.168.4.0","255.255.255.0");
+address3.SetBase("192.168.5.0","255.255.255.0");
+address4.SetBase("192.168.2.0","255.255.255.0");
+address5.SetBase("192.168.1.0","255.255.255.0");
+
+Ipv4InterfaceContainer interface1=address1.Assign(device1);
+Ipv4InterfaceContainer interface2=address2.Assign(device2);
+Ipv4InterfaceContainer interface3=address3.Assign(device3);
+Ipv4InterfaceContainer interface4=address4.Assign(device4);
+Ipv4InterfaceContainer interface5=address5.Assign(device5);
+
+Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+
+// Wifi Code
+YansWifiChannelHelper channel1=YansWifiChannelHelper::Default();
+YansWifiPhyHelper phy1=YansWifiPhyHelper::Default(); 
+phy1.SetChannel(channel1.Create());
+
+WifiHelper wifi1;
+wifi1.SetRemoteStationManager("ns3::AarfWifiManager"); // Use AARF rate control
+
+
+Ssid ssid1=Ssid("ns-3-ssid1"); //set network name(SSID). here the name is "ns-3-ssid1"
+
+WifiMacHelper mac1;
+mac1.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid1),"ActiveProbing",BooleanValue(false));
+
+//install station nodes to wifi channel
+NetDeviceContainer staDevices1;
+staDevices1=wifi1.Install(phy1,mac1,staNode1);
+
+mac1.SetType("ns3::ApWifiMac","Ssid",SsidValue(ssid1));
+
+//install access point node to wifi channel( where station nodes and access point node in wifi connection)
+NetDeviceContainer apDevice1;
+apDevice1=wifi1.Install(phy1,mac1,ApNode1);
+
+MobilityHelper mobility1;
+mobility1.SetPositionAllocator("ns3::GridPositionAllocator",
+                    "MinX",DoubleValue(5.0),
+                    "MinY",DoubleValue(10.0),
+                    "DeltaX",DoubleValue(0.0),
+                    "DeltaY",DoubleValue(30.0),
+                    "GridWidth",UintegerValue(1),
+                    "LayoutType",StringValue("RowFirst"));
+    
+
+mobility1.SetMobilityModel("ns3::RandomWalk2dMobilityModel","Bounds",RectangleValue(Rectangle(00,150,00,150)));
+mobility1.Install(staNode1);
+
+
+Ipv4InterfaceContainer wifiInterface1;
+wifiInterface1=address5.Assign(apDevice1);
+wifiInterface1=address5.Assign(staDevices1);
+// Wifi Code end
+
+// tcp server
+PacketSinkHelper sink("ns3::TcpSocketFactory",Address(InetSocketAddress(Ipv4Address::GetAny(),10)));
+
+ApplicationContainer server=sink.Install(nodes.Get(0));
+server.Start(Seconds(1.0));
+server.Stop(Seconds(10.0));
+
+// tcp client
+OnOffHelper onOff("ns3::TcpSocketFactory",Address(InetSocketAddress(Ipv4Address("192.168.5.0"),10)));
+onOff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+onOff.SetAttribute("OffTime",StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+onOff.SetAttribute("DataRate",StringValue("2Mbps"));
+onOff.SetAttribute("PacketSize",UintegerValue(1024));
+	
+ApplicationContainer client=onOff.Install(nodes.Get(3));
+client.Start(Seconds(1.0));
+client.Stop(Seconds(10.0));
+
+// UDP Echo server
+UdpEchoServerHelper echoserever(8);
+ApplicationContainer serverApp=echoserever.Install(nodes.Get(1));
+serverApp.Start(Seconds(1.0));
+serverApp.Stop(Seconds(10.0));
+
+//UDP echo client
+UdpEchoClientHelper echoclient1 (interface4.GetAddress(1),8);
+echoclient1.SetAttribute("MaxPackets",UintegerValue(1));
+echoclient1.SetAttribute("Interval",TimeValue(Seconds(1.0)));
+echoclient1.SetAttribute("PacketSize",UintegerValue(1024));
+
+ApplicationContainer clientApp1=echoclient1.Install(csmaNodes1.Get(3));
+clientApp1.Start(Seconds(1.0));
+clientApp1.Stop(Seconds(10.0));
+
+// UDP server
+UdpServerHelper udpServer(9);
+ApplicationContainer userver= udpServer.Install(nodes.Get(2)); 
+userver.Start(Seconds(1.0));
+userver.Stop(Seconds(10.0));
+
+//UDP client
+UdpClientHelper udpClient(interface5.GetAddress(2),9);
+udpClient.SetAttribute("MaxPackets",UintegerValue(2));
+udpClient.SetAttribute("Interval",TimeValue(Seconds(1.0)));
+udpClient.SetAttribute("PacketSize",UintegerValue(512));
+	
+ApplicationContainer uclient=udpClient.Install(csmaNodes2.Get(0)); 
+uclient.Start(Seconds(1.0));
+uclient.Stop(Seconds(10.0));
+
+AnimationInterface anim("2017icts05.xml");
+
+anim.UpdateNodeDescription(nodes.Get(0),"I -TCP Server");
+anim.UpdateNodeDescription(nodes.Get(1),"R-UDP Echo Server");
+anim.UpdateNodeDescription(nodes.Get(2),"H-UDP Server");
+anim.UpdateNodeDescription(nodes.Get(3),"G-TCP Client");
+
+anim.UpdateNodeDescription(csmaNodes1.Get(1),"D");
+anim.UpdateNodeDescription(csmaNodes1.Get(2),"E");
+anim.UpdateNodeDescription(csmaNodes1.Get(3),"F- UDP Echo Client");
+
+anim.UpdateNodeDescription(csmaNodes2.Get(1),"C");
+anim.UpdateNodeDescription(csmaNodes2.Get(2),"B");
+anim.UpdateNodeDescription(csmaNodes2.Get(3),"A-UDP Client");
+
+anim.UpdateNodeSize(0,0.2,0.2);
+anim.UpdateNodeSize(1,0.2,0.2);
+anim.UpdateNodeSize(2,0.2,0.2);
+anim.UpdateNodeSize(3,0.2,0.2);
+
+anim.UpdateNodeSize(4,0.2,0.2);
+anim.UpdateNodeSize(5,0.2,0.2);
+anim.UpdateNodeSize(6,0.2,0.2);
+
+anim.UpdateNodeSize(7,0.2,0.2);
+anim.UpdateNodeSize(8,0.2,0.2);
+anim.UpdateNodeSize(9,0.2,0.2);
+
+
+Simulator::Run();
+Simulator::Destroy();
+
+return 0;
+}
+
+
+code Run
+./waf --run scratch/filename
+
+get Animation
+ gotothe back ns3 folder and open terminal in ./NetAnim 
